@@ -37,7 +37,7 @@ class DiffCommand extends Command implements ContainerAwareInterface
             ->addOption('output', 'o', InputOption::VALUE_OPTIONAL, 'Output file or name of OutputHandlers, [file | stdout]', 'stdout')
             ->addOption('processor', 'P', InputOption::VALUE_OPTIONAL, 'Operational Processor, should be service name or processor name', 'processor.default')
             ->addOption('formatter', 'f', InputOption::VALUE_OPTIONAL, 'Output formatter', 'sql')
-            ->addOption('provider', 'p', InputOption::VALUE_OPTIONAL, 'Source provider', 'db.pdo')
+            ->addOption('provider', 'p', InputOption::VALUE_OPTIONAL, 'Source provider [csv|db.pdo]', 'db.pdo')
             ->addOption('finder', 'F', InputOption::VALUE_OPTIONAL, 'Destination item finder', 'db.pdo.table.finder')
             ->addOption('context', 'c', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Set context property, -c db.config=test', [])
         ;

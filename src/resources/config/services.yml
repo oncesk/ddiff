@@ -60,11 +60,15 @@ services:
             - "@database.configuration.factory"
             - "@database.schema.provider"
 
+    destination.finder.csv:
+        class: DDiff\Destination\Item\Finder\CsvFinder
+
     # Source
     source.provider.pool:
         class: DDiff\Source\Provider\Pool
         calls:
             - [ addProvider, ["@source.provider.pdo_table"] ]
+            - [ addProvider, ["@source.provider.csv"] ]
 
     source.provider.pdo_table:
         class: DDiff\Source\Provider\Database\PdoTableProvider
@@ -72,6 +76,9 @@ services:
             - "@database.pdo.provider"
             - "@database.configuration.factory"
             - "@database.schema.provider"
+
+    source.provider.csv:
+        class: DDiff\Source\Provider\CsvProvider
 
     type.resolver:
         class: DDiff\Model\TypeResolver

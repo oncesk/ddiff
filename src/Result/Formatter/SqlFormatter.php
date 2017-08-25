@@ -79,7 +79,11 @@ class SqlFormatter implements FormatterInterface, FormatterHeaderAwareInterface
      */
     public function format(StateInterface $state, ContextInterface $context)
     {
-        if (!$context->has('db.src.table') || !$context->has('db.dst.table')) {
+//        if (!$context->has('db.src.table') || !$context->has('db.dst.table')) {
+//            throw new \LogicException('Could not generate sql statements because of source or destination table not passed');
+//        }
+
+        if (!$context->has('db.dst.table')) {
             throw new \LogicException('Could not generate sql statements because of source or destination table not passed');
         }
 

@@ -1,6 +1,9 @@
 <?php
 
 namespace DDiff\Item\Metadata;
+use DDiff\Item\FieldInterface;
+use DDiff\Item\ItemInterface;
+use DDiff\Item\ValueAwareInterface;
 
 /**
  * Class MetadataAwareTrait
@@ -19,7 +22,13 @@ trait MetadataAwareTrait
     public function getMetadata() : MetadataInterface
     {
         if (null === $this->metadata) {
-            $this->metadata = new NullMetadata();
+
+            if ($this instanceof FieldInterface && $this instanceof ValueAwareInterface) {
+                $type = gettype($this->getValue());
+                $this->metadata = new Metadata($type, $type);
+            } else {
+                $this->metadata = new NullMetadata();
+            }
         }
 
         return $this->metadata;

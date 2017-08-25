@@ -3,6 +3,7 @@
 namespace DDiff\Destination\Item;
 
 use DDiff\Exception\DDiffException;
+use DDiff\Item\Context\ContextInterface;
 
 /**
  * Interface FinderFactoryInterface
@@ -11,8 +12,9 @@ use DDiff\Exception\DDiffException;
 interface FinderFactoryInterface
 {
     /**
+     * @param ContextInterface $context
      * @throws DDiffException
      * @return FinderInterface
      */
-    public function createDestinationFinder() : FinderInterface;
+    public function createDestinationFinder(ContextInterface $context) : FinderInterface;
 }

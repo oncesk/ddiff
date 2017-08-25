@@ -33,4 +33,14 @@ class NullMetadata implements MetadataInterface, NullObjectInterface
     {
         return null;
     }
+
+    public function isInteger(): bool
+    {
+        return false;
+    }
+
+    public function isString(): bool
+    {
+        return false;
+    }
 }

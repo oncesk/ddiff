@@ -99,11 +99,11 @@ class PdoTableProvider implements ProviderInterface, ContextAwareInterface, Find
     }
 
     /**
+     * @param ContextInterface $context
      * @return FinderInterface
      */
-    public function createDestinationFinder(): FinderInterface
+    public function createDestinationFinder(ContextInterface $context): FinderInterface
     {
-        $context = $this->getContext();
         $this->validateContext($context);
 
         $finder = new PdoFinder($this->pdoProvider, $this->databaseConfigurationFactory, $this->schemaProvider);

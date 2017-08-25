@@ -6,8 +6,10 @@ use DDiff\Configuration\Database\DatabaseFactoryInterface;
 use DDiff\Database\PdoProviderInterface;
 use DDiff\Database\Schema\PrimaryFieldInterface;
 use DDiff\Database\Schema\PrimaryKeyAwareInterface;
+use DDiff\Database\Schema\TableInterface;
 use DDiff\Destination\Item\FinderInterface;
 use DDiff\Exception\DatabaseException;
+use DDiff\Exception\DDiffException;
 use DDiff\Exception\InvalidConfigurationException;
 use DDiff\Exception\NotFountException;
 use DDiff\Item\Context\Context;
@@ -44,7 +46,7 @@ class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFacto
     protected $pdoProvider;
 
     /**
-     * @var string
+     * @var TableInterface
      */
     protected $table;
 
@@ -84,12 +86,11 @@ class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFacto
     }
 
     /**
+     * @param ContextInterface $context
      * @return ProviderInterface
      */
-    public function createSourceProvider(): ProviderInterface
+    public function createSourceProvider(ContextInterface $context): ProviderInterface
     {
-        $context = $this->getContext();
-
         $provider = new PdoTableProvider(
             $this->pdoProvider,
             $this->databaseConfigurationFactory,
@@ -129,7 +130,23 @@ class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFacto
      * @throws NotFountException
      * @return ItemInterface
      */
-    public function find(ItemInterface $item): ItemInterface
+    public function find(ItemInterface $item) : ItemInterface
+    {
+        $destinationItem = $this->doFind($item);
+
+        if (!$destinationItem) {
+            $transformed = $this->transformToValidRepresentation($item);
+            $destinationItem = $this->doFind($transformed);
+        }
+
+        if ($destinationItem) {
+            return $destinationItem;
+        }
+
+        throw new NotFountException();
+    }
+
+    protected function doFind(ItemInterface $item)
     {
         if ($item instanceof PrimaryKeyAwareInterface) {
             $primaryKey = $item->getPrimaryKey();
@@ -202,7 +219,28 @@ class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFacto
             }
         }
 
-        throw new NotFountException();
+        return null;
+    }
+
+    /**
+     * @param ItemInterface $item
+     * @throws DDiffException
+     *
+     * @return ItemInterface
+     */
+    protected function transformToValidRepresentation(ItemInterface $item)
+    {
+        $destination = new PrimaryKeyAwareItem();
+        $destination->setPrimaryKey($this->table->getPrimaryKey());
+
+        foreach ($this->table->getFields() as $field) {
+            if (!$item->hasField($field->getName())) {
+                throw new DDiffException('Different structure of source and destination');
+            }
+            $destination->addField($item->getField($field->getName()));
+        }
+
+        return $destination;
     }
 
     /**

@@ -11,6 +11,7 @@ use DDiff\Exception\DDiffException;
 use DDiff\Item\Context\Context;
 use DDiff\Item\Context\ContextAwareInterface;
 use DDiff\Item\Context\ContextInterface;
+use DDiff\Model\CleanAwareInterface;
 use DDiff\Model\ConfigurableInterface;
 use DDiff\Result\FormatterHeaderAwareInterface;
 use DDiff\Result\FormatterInterface;
@@ -68,18 +69,19 @@ class DefaultProcessor implements ProcessorInterface
         if ($sourceProvider instanceof FinderFactoryInterface && $finder instanceof ProviderFactoryInterface) {
             //  it looks like we can track deleted
             try {
-                $sourceFinder = $sourceProvider->createDestinationFinder();
-                $destinationProvider = $finder->createSourceProvider();
+                $ctx = clone $context;
+                $sourceFinder = $sourceProvider->createDestinationFinder($ctx);
+                $destinationProvider = $finder->createSourceProvider($ctx);
 
-                $parameters = $context->getAll();
-                if ($sourceFinder instanceof ContextAwareInterface) {
-                    $parameters = array_merge($parameters, $sourceFinder->getContext()->getAll());
-                }
-
-                if ($destinationProvider instanceof ContextAwareInterface) {
-                    $parameters = array_merge($parameters, $destinationProvider->getContext()->getAll());
-                }
-                $ctx = new Context($parameters);
+//                $parameters = $context->getAll();
+//                if ($sourceFinder instanceof ContextAwareInterface) {
+//                    $parameters = array_merge($parameters, $sourceFinder->getContext()->getAll());
+//                }
+//
+//                if ($destinationProvider instanceof ContextAwareInterface) {
+//                    $parameters = array_merge($parameters, $destinationProvider->getContext()->getAll());
+//                }
+//                $ctx = new Context($parameters);
 
                 $this->doProcess(
                     $destinationProvider,
@@ -94,6 +96,7 @@ class DefaultProcessor implements ProcessorInterface
             } catch (DDiffException $exception) {
                 //  do nothing now
                 //  todo add logging
+                echo $exception->getMessage();die;
             }
         }
 
@@ -143,6 +146,14 @@ class DefaultProcessor implements ProcessorInterface
             $formatter->configure($context);
         }
 
+        if ($sourceProvider instanceof ConfigurableInterface) {
+            $sourceProvider->configure($context);
+        }
+
+        if ($finder instanceof ConfigurableInterface) {
+            $finder->configure($context);
+        }
+
         $sourceProvider->init();
         $finder->init();
 
@@ -154,10 +165,21 @@ class DefaultProcessor implements ProcessorInterface
         //  trying to detect new and update data
         while (!$sourceProvider->eof()) {
             $sourceItem = $sourceProvider->getSourceItem();
-            $state = $determiner->determine($sourceItem, $finder);
-            $output->write($state, $formatter);
+
+            if (!$sourceItem instanceof NullObjectInterface) {
+                $state = $determiner->determine($sourceItem, $finder);
+                $output->write($state, $formatter);
+            }
 
             $sourceProvider->next();
+        }
+
+        if ($sourceProvider instanceof CleanAwareInterface) {
+            $sourceProvider->clean();
+        }
+
+        if ($finder instanceof CleanAwareInterface) {
+            $finder->clean();
         }
     }
 }
