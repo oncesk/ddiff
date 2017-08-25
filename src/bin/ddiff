@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__.'/../../vendor/autoload.php';
+$container = require_once __DIR__ . '/../bootstrap.php';
+/* @var \Symfony\Component\DependencyInjection\ContainerInterface $container */
+
+use DDiff\Application\Application;
+use DDiff\Command\DataBase\CreateConfigurationCommand as CreateDatabaseConfigCommand;
+use DDiff\Command\DataBase\ConfigurationListCommand;
+use DDiff\Command\DiffCommand;
+
+//  todo must be refactored!!!
+//  todo connect symfony dependency injection
+$application = new Application();
+$application->setContainer($container);
+
+$application
+    ->addCommands([
+        new CreateDatabaseConfigCommand(),
+        new ConfigurationListCommand(),
+        new DiffCommand()
+    ])
+;
+
+$application->run();

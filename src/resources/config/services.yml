@@ -1,0 +1,75 @@
+services:
+
+    configuration.storage:
+        class: DDiff\Configuration\Storage\Storage
+        arguments:
+            - "%conf.root%"
+
+    configuration.db.storage:
+        class: DDiff\Configuration\Storage\DatabaseStorage
+        arguments:
+            - "%conf.root%"
+
+    # Database
+    database.pdo.provider:
+        class: DDiff\Database\PdoProvider
+
+    database.configuration.factory:
+        class: DDiff\Configuration\Database\DatabaseFactory
+        arguments:
+            - "@configuration.db.storage"
+
+    database.schema.provider:
+        class: DDiff\Database\Schema\Provider
+
+    # Formatters
+    result.formatter.provider:
+        class: DDiff\Result\Formatter\Provider
+        calls:
+            - [ addFormatter, ["@result.formatter.sql"] ]
+
+    result.formatter.sql:
+        class: DDiff\Result\Formatter\SqlFormatter
+        arguments:
+            - "@type.resolver"
+
+    # Output
+    result.output.provider:
+        class: DDiff\Result\Output\Provider
+        calls:
+            - [ addOutput, ["@result.output.stdout"] ]
+
+    result.output.stdout:
+        class: DDiff\Result\Output\StdOutOutput
+
+    processor.default:
+        class: DDiff\Processor\DefaultProcessor
+
+    state.determiner.default:
+        class: DDiff\Destination\Item\StateDeterminer
+
+    # Destination
+    destination.finder.pdo:
+        class: DDiff\Destination\Item\Finder\PdoFinder
+        arguments:
+            - "@database.pdo.provider"
+            - "@database.configuration.factory"
+            - "@database.schema.provider"
+
+    # Source
+    source.provider.pool:
+        class: DDiff\Source\Provider\Pool
+        calls:
+            - [ addProvider, ["@source.provider.pdo_table"] ]
+
+    source.provider.pdo_table:
+        class: DDiff\Source\Provider\Database\PdoTableProvider
+        arguments:
+            - "@database.pdo.provider"
+            - "@database.configuration.factory"
+            - "@database.schema.provider"
+
+    type.resolver:
+        class: DDiff\Model\TypeResolver
+
+
