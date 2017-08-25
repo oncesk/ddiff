@@ -11,6 +11,7 @@ use DDiff\Exception\DDiffException;
 use DDiff\Item\Context\Context;
 use DDiff\Item\Context\ContextAwareInterface;
 use DDiff\Item\Context\ContextInterface;
+use DDiff\Model\ConfigurableInterface;
 use DDiff\Result\FormatterHeaderAwareInterface;
 use DDiff\Result\FormatterInterface;
 use DDiff\Result\HeaderOutputAwareInterface;
@@ -130,8 +131,16 @@ class DefaultProcessor implements ProcessorInterface
             $output->setContext($context);
         }
 
+        if ($output instanceof ConfigurableInterface) {
+            $output->configure($context);
+        }
+
         if ($formatter instanceof ContextAwareInterface) {
             $formatter->setContext($context);
+        }
+
+        if ($formatter instanceof ConfigurableInterface) {
+            $formatter->configure($context);
         }
 
         $sourceProvider->init();

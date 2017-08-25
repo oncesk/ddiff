@@ -38,9 +38,13 @@ services:
         class: DDiff\Result\Output\Provider
         calls:
             - [ addOutput, ["@result.output.stdout"] ]
+            - [ addOutput, ["@result.output.file"] ]
 
     result.output.stdout:
         class: DDiff\Result\Output\StdOutOutput
+
+    result.output.file:
+        class: DDiff\Result\Output\FileOutput
 
     processor.default:
         class: DDiff\Processor\DefaultProcessor

@@ -8,6 +8,7 @@ use DDiff\Item\Context\Context;
 use DDiff\Processor\ProcessorInterface;
 use DDiff\Source\Provider\PoolInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,7 +33,8 @@ class DiffCommand extends Command implements ContainerAwareInterface
         $this
             ->setName('ddiff:do:diff')
             ->setDescription('Perform diff calculation')
-            ->addOption('output', 'o', InputOption::VALUE_OPTIONAL, 'Output file or name of OutputHandlers', 'stdout')
+            ->addArgument('file', InputArgument::OPTIONAL, 'Write to the file')
+            ->addOption('output', 'o', InputOption::VALUE_OPTIONAL, 'Output file or name of OutputHandlers, [file | stdout]', 'stdout')
             ->addOption('processor', 'P', InputOption::VALUE_OPTIONAL, 'Operational Processor, should be service name or processor name', 'processor.default')
             ->addOption('formatter', 'f', InputOption::VALUE_OPTIONAL, 'Output formatter', 'sql')
             ->addOption('provider', 'p', InputOption::VALUE_OPTIONAL, 'Source provider', 'db.pdo')
@@ -48,13 +50,24 @@ class DiffCommand extends Command implements ContainerAwareInterface
         $sourcePool = $this->getSourcePool();
 
         $formatter = $formatterProvider->getFormatter($input->getOption('formatter'));
-        $output = $outputProvider->getOutput($input->getOption('output'));
+
+        $contextOptions = [];
+        $output = $input->getOption('output');
+        if ($input->getArgument('file')) {
+            $output = 'file';
+            $contextOptions['file'] = $input->getArgument('file');
+        }
+
+        $output = $outputProvider->getOutput($output);
         $processor = $this->getProcessor($input->getOption('processor'));
         $stateDeterminer = $this->container->get('state.determiner.default');
         $sourceProvider = $sourcePool->getProvider($input->getOption('provider'));
         $finder = $this->container->get('destination.finder.pdo');  // todo refactor this
 
-        $contextOptions = $this->prepareContextOptions($input->getOption('context'));
+        $contextOptions = array_merge(
+            $this->prepareContextOptions($input->getOption('context')),
+            $contextOptions
+        );
         $context = new Context($contextOptions);
 
         $configuration = new Configuration();
