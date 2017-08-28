@@ -19,13 +19,14 @@ use DDiff\Item\ItemInterface;
 use DDiff\Item\NullableItem;
 use DDiff\Item\PrimaryKeyAwareItem;
 use DDiff\Item\ValueField;
+use DDiff\Model\CleanAwareInterface;
 use DDiff\Model\ConfigurableInterface;
 
 /**
  * Class CsvFinder
  * @package DDiff\Destination\Item\Finder
  */
-class CsvFinder implements FinderInterface, ConfigurableInterface, ContextAwareInterface
+class CsvFinder implements FinderInterface, ConfigurableInterface, ContextAwareInterface, CleanAwareInterface
 {
     use ContextAwareTrait;
 
@@ -125,6 +126,16 @@ class CsvFinder implements FinderInterface, ConfigurableInterface, ContextAwareI
         }
 
         throw new NotFountException();
+    }
+
+    /**
+     * Clean up our loaded records
+     */
+    public function clean()
+    {
+        if (!empty($this->records)) {
+            $this->records = null;
+        }
     }
 
     /**
