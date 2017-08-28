@@ -13,6 +13,7 @@ use DDiff\Item\Context\ContextAwareInterface;
 use DDiff\Item\Context\ContextInterface;
 use DDiff\Model\CleanAwareInterface;
 use DDiff\Model\ConfigurableInterface;
+use DDiff\Model\ConfigureContextForRemovedItemsInterface;
 use DDiff\Result\FormatterHeaderAwareInterface;
 use DDiff\Result\FormatterInterface;
 use DDiff\Result\HeaderOutputAwareInterface;
@@ -73,15 +74,9 @@ class DefaultProcessor implements ProcessorInterface
                 $sourceFinder = $sourceProvider->createDestinationFinder($ctx);
                 $destinationProvider = $finder->createSourceProvider($ctx);
 
-//                $parameters = $context->getAll();
-//                if ($sourceFinder instanceof ContextAwareInterface) {
-//                    $parameters = array_merge($parameters, $sourceFinder->getContext()->getAll());
-//                }
-//
-//                if ($destinationProvider instanceof ContextAwareInterface) {
-//                    $parameters = array_merge($parameters, $destinationProvider->getContext()->getAll());
-//                }
-//                $ctx = new Context($parameters);
+                if ($finder instanceof ConfigureContextForRemovedItemsInterface) {
+                    $finder->configureContextForRemovedItems($ctx);
+                }
 
                 $this->doProcess(
                     $destinationProvider,

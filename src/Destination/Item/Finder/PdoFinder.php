@@ -22,6 +22,7 @@ use DDiff\Item\ItemInterface;
 use DDiff\Item\PrimaryKeyAwareItem;
 use DDiff\Item\ValueAwareInterface;
 use DDiff\Item\ValueField;
+use DDiff\Model\ConfigureContextForRemovedItemsInterface;
 use DDiff\Source\Provider\Database\PdoTableProvider;
 use DDiff\Source\Provider\ProviderFactoryInterface;
 use DDiff\Source\Provider\ProviderInterface;
@@ -31,7 +32,7 @@ use DDiff\Database\Schema\ProviderInterface as DatabaseSchemaProviderInterface;
  * Class PdoFinder
  * @package DDiff\Destination\Item\Finder
  */
-class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFactoryInterface
+class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFactoryInterface, ConfigureContextForRemovedItemsInterface
 {
     use ContextAwareTrait;
 
@@ -83,6 +84,14 @@ class PdoFinder implements FinderInterface, ContextAwareInterface, ProviderFacto
     public function getName(): string
     {
         return 'db.pdo.table.finder';
+    }
+
+    /**
+     * @param ContextInterface $context
+     */
+    public function configureContextForRemovedItems(ContextInterface $context)
+    {
+        $context->set('db.remove.table', $context->get('db.dst.table'));
     }
 
     /**
